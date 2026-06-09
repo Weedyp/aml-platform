@@ -1,0 +1,4 @@
+dependencies {
+    // Inherits data persistence access to query watchlist tables
+    implementation project(':customer-core')
+}

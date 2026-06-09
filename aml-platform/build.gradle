@@ -1,0 +1,51 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.6' apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+subprojects{
+	apply plugin: 'java'
+	apply plugin: 'io.spring.dependency-management'
+
+	group = 'com.regtech'
+	version = '0.0.1-SNAPSHOT'
+
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(25)
+		}
+	}
+
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	}
+
+	plugins.withId('org.springframework.boot') {
+		if (project.name == 'api-gateway') {
+			// Only the gateway builds an executable server jar
+			bootJar {
+				enabled = true
+			}
+			jar {
+				enabled = false
+			}
+		} else {
+			// All other modules are treated strictly as internal libraries
+			bootJar {
+				enabled = false
+			}
+			jar {
+				enabled = true
+			}
+		}
+	}
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+}
+

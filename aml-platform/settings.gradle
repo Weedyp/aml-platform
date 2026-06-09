@@ -1,0 +1,6 @@
+rootProject.name = 'aml-platform'
+
+include 'api-gateway'
+include 'customer-core'
+include 'kyc-engine'
+include 'batch-processor'

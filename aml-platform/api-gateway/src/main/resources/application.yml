@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: "jdbc:sqlserver://localhost:1433;databaseName=AMLDB_08062026;trustServerCertificate=true"
+    username: "sa"
+    password: "admin@123"
+    driver-class-name: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  flyway:
+    enabled: true
+    baseline-on-migrate: true

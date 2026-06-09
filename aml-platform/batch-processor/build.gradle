@@ -1,0 +1,7 @@
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+
+    // Allows batch jobs to modify or clean user data tables
+    implementation project(':customer-core')
+}
+
