@@ -1,3 +1,4 @@
+# spring.flyway config
 spring:
   datasource:
     url: "jdbc:sqlserver://localhost:1433;databaseName=AMLDB_08062026;trustServerCertificate=true"
@@ -5,5 +6,10 @@ spring:
     password: "admin@123"
     driver-class-name: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
   flyway:
-    enabled: true
-    baseline-on-migrate: true
+    enabled: true                    # ← no quotes, raw boolean
+
+# logging config at ROOT level, not nested under spring
+logging:
+  level:
+    org.flywaydb: DEBUG
+    org.springframework.boot.autoconfigure: DEBUG
