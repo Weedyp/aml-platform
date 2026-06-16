@@ -7,10 +7,6 @@ spring:
     driver-class-name: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
   flyway:
     enabled: true                    # ← no quotes, raw boolean
-    locations:
-      - classpath:db/migration       # ← 6 spaces, not 8
-    baseline-on-migrate: false       # ← no quotes
-    validate-on-migrate: true        # ← no quotes
 
 # logging config at ROOT level, not nested under spring
 logging:
