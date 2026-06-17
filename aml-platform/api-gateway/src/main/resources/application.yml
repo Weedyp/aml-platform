@@ -7,13 +7,18 @@ spring:
     driver-class-name: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
   flyway:
     enabled: true                    # ← no quotes, raw boolean
-
-  spring:
-    mvc:
+  mvc:
       problemdetails:
         enabled: true
+  security:
+      oauth2:
+        resourceserver:
+          jwt:
+            # LOCAL DEV ONLY: A 256-bit symmetric key for decoding tokens.
+            # In production, this is replaced by an 'issuer-uri' pointing to Keycloak/Auth0.
+            secret-key: "4cf24c4e8574482a8847b29a24d5218d4cf24c4e8574482a8847b29a24d5218d"
 # logging config at ROOT level, not nested under spring
-logging:
-  level:
-    org.flywaydb: DEBUG
-    org.springframework.boot.autoconfigure: DEBUG
+#logging:
+#  level:
+#    org.flywaydb: DEBUG
+#    org.springframework.boot.autoconfigure: DEBUG
