@@ -8,6 +8,10 @@ spring:
   flyway:
     enabled: true                    # ← no quotes, raw boolean
 
+  spring:
+    mvc:
+      problemdetails:
+        enabled: true
 # logging config at ROOT level, not nested under spring
 logging:
   level:
