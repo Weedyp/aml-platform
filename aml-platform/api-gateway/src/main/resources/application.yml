@@ -17,6 +17,10 @@ spring:
             # LOCAL DEV ONLY: A 256-bit symmetric key for decoding tokens.
             # In production, this is replaced by an 'issuer-uri' pointing to Keycloak/Auth0.
             secret-key: "4cf24c4e8574482a8847b29a24d5218d4cf24c4e8574482a8847b29a24d5218d"
+  aml:
+    staging:
+      # On Windows, this translates to C:\tmp\aml-staging. On Mac/Linux, it's /tmp/aml-staging.
+      directory: "/tmp/aml-staging"
 # logging config at ROOT level, not nested under spring
 #logging:
 #  level:
