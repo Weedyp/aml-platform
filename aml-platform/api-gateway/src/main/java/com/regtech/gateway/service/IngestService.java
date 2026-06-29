@@ -25,6 +25,13 @@ public class IngestService {
     @Value("${aml.staging.directory:/tmp/aml-staging}")
     private String stagingDirectory;
 
+    private final ZipDeflationService zipDeflationService;
+
+    // 2. Add the constructor for Spring dependency injection
+    public IngestService(ZipDeflationService zipDeflationService) {
+        this.zipDeflationService = zipDeflationService;
+    }
+
     public IngestResponseDto stageFile(MultipartFile file, String tenantId) {
         if (file.isEmpty()) {
             throw new IllegalStateException("Cannot ingest an empty file.");
@@ -53,6 +60,8 @@ public class IngestService {
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, targetLocation, StandardCopyOption.REPLACE_EXISTING);
             }
+
+            zipDeflationService.securelyExtract(targetLocation, tenantPath);
 
             String trackingId = UUID.randomUUID().toString();
             log.info("Successfully staged file {} for tenant {}", trackingId, tenantId);
