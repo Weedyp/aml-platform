@@ -19,12 +19,19 @@ public class ZipDeflationService {
     private static final int MAX_ENTRIES = 10;
     private static final long MAX_UNCOMPRESSED_BYTES = 100 * 1024 * 1024; // 100 MB
 
+    private final CsvValidationService csvValidationService;
+
+    public ZipDeflationService(CsvValidationService csvValidationService) {
+        this.csvValidationService = csvValidationService;
+    }
+
     @Async
     public void securelyExtract(Path zipFilePath, Path targetDirectory) {
         log.info("Starting secure async extraction for: {}", zipFilePath.getFileName());
 
         int entryCount = 0;
         long totalBytesExtracted = 0;
+        Path extractedCsvPath = null;
 
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFilePath.toFile()))) {
             ZipEntry entry;
@@ -46,11 +53,19 @@ public class ZipDeflationService {
                 } else {
                     Files.createDirectories(resolvedPath.getParent());
                     totalBytesExtracted += extractFileWithLimit(zis, resolvedPath, totalBytesExtracted);
+                    if (entry.getName().toLowerCase().endsWith(".csv")) {
+                        extractedCsvPath = resolvedPath;
+                    }
                 }
                 zis.closeEntry();
             }
             log.info("Extraction complete. Safely extracted {} files. Total size: {} bytes", entryCount, totalBytesExtracted);
-
+            if (extractedCsvPath != null) {
+                // Trigger the validation engine for the extracted CSV file
+                csvValidationService.processAndValidate(extractedCsvPath, "bank_alpha_customer_v1.json");
+            } else {
+                log.warn("No CSV file found in extracted ZIP archive: {}", zipFilePath.getFileName());
+            }
         } catch (Exception e) {
             log.error("Halting extraction! Security or IO exception encountered: {}", e.getMessage());
             // In a real system, you would update the database here to mark this batch as 'FAILED_SECURITY_CHECK'
