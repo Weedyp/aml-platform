@@ -1,6 +1,8 @@
 package com.regtech.gateway.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.regtech.gateway.event.KycBatchReadyEvent;
+import com.regtech.gateway.event.KycEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,11 +17,14 @@ public class BatchIngestionService {
     private static final Logger log = LoggerFactory.getLogger(BatchIngestionService.class);
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public BatchIngestionService(NamedParameterJdbcTemplate jdbcTemplate) {
+    private final KycEventPublisher eventPublisher;
+
+    public BatchIngestionService(NamedParameterJdbcTemplate jdbcTemplate,KycEventPublisher eventPublisher) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventPublisher=eventPublisher;
     }
 
-    public void insertBatch(List<JsonNode> validRows) {
+    public void insertBatch(String tenantId,List<JsonNode> validRows) {
         if (validRows.isEmpty()) return;
 
         // Native SQL for maximum speed.
@@ -40,5 +45,8 @@ public class BatchIngestionService {
         // Execute the massive batch insert
         int[] updateCounts = jdbcTemplate.batchUpdate(sql, batchParams);
         log.info("Successfully materialized {} rows into SQL Server staging table.", updateCounts.length);
+
+        KycBatchReadyEvent event =new KycBatchReadyEvent(tenantId,updateCounts.length,System.currentTimeMillis());
+        eventPublisher.publishBatchReady(event);
     }
 }

@@ -76,14 +76,14 @@ public class CsvValidationService {
                 }
 
                 if (batchToInsert.size() >= 1000) {
-                    batchIngestionService.insertBatch(batchToInsert);
+                    batchIngestionService.insertBatch("bank_alpha",batchToInsert);
                     batchToInsert.clear();
                 }
             }
 
             // Flush remaining records after loop completion
             if (!batchToInsert.isEmpty()) {
-                batchIngestionService.insertBatch(batchToInsert);
+                batchIngestionService.insertBatch("bank_alpha",batchToInsert);
                 batchToInsert.clear();
             }
 
