@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -26,6 +28,10 @@ public class CsvValidationService {
     private final ObjectMapper jsonMapper = new ObjectMapper();
     private final JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
 
+    private final BatchIngestionService batchIngestionService;
+    public CsvValidationService(BatchIngestionService batchIngestionService) {
+        this.batchIngestionService = batchIngestionService;
+    }
     /**
      * @param extractedCsvPath The raw CSV file we just extracted
      * @param schemaName The name of the schema to validate against (e.g., "bank_alpha_customer_v1.json")
@@ -48,7 +54,7 @@ public class CsvValidationService {
             var iterator = csvMapper.readerFor(JsonNode.class)
                     .with(bootstrapSchema)
                     .readValues(extractedCsvPath.toFile());
-
+            List<JsonNode> batchToInsert = new ArrayList<>();
             int rowCount = 0;
             int failedCount = 0;
 
@@ -61,13 +67,24 @@ public class CsvValidationService {
                 Set<ValidationMessage> errors = schema.validate(rowAsJson);
 
                 if (errors.isEmpty()) {
-                    // TODO: Valid Row! Add to our fast SQL Batch Insert list.
+                    batchToInsert.add(rowAsJson);
                 } else {
                     // Invalid Row! Log the exact reason it failed.
                     failedCount++;
                     log.warn("Row {} failed validation. Errors: {}", rowCount, errors);
                     // TODO: Send to Dead Letter Queue (DLQ) table.
                 }
+
+                if (batchToInsert.size() >= 1000) {
+                    batchIngestionService.insertBatch(batchToInsert);
+                    batchToInsert.clear();
+                }
+            }
+
+            // Flush remaining records after loop completion
+            if (!batchToInsert.isEmpty()) {
+                batchIngestionService.insertBatch(batchToInsert);
+                batchToInsert.clear();
             }
 
             log.info("Validation Complete. Total Rows: {}. Failed: {}", rowCount, failedCount);
